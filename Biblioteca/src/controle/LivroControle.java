@@ -10,7 +10,7 @@ public class LivroControle {
     private Connection conexao;
 
     public LivroControle() throws SQLException {
-        this.conexao = Conexao.getConexao();
+        this.conexao = Conexao.getConnection();
     }
 
     public void adicionarLivro(Livro livro) throws SQLException {

@@ -1,0 +1,43 @@
+CREATE DATABASE livraria;
+
+USE livraria;
+
+-- Tabela Livro
+CREATE TABLE Livro (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(255) NOT NULL,
+    autor VARCHAR(255) NOT NULL,
+    genero VARCHAR(100),
+    quantidade INT NOT NULL
+);
+
+-- Tabela Usuario
+CREATE TABLE Usuario (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(255) NOT NULL,
+    cpf VARCHAR(14) UNIQUE NOT NULL,
+    email VARCHAR(20)
+);
+
+-- Tabela Emprestimo
+CREATE TABLE Emprestimo (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    idLivro INT NOT NULL,
+    idUsuario INT NOT NULL,
+    dataEmprestimo DATE NOT NULL,
+    dataDevolucao DATE,
+    FOREIGN KEY (idLivro) REFERENCES Livro(id),
+    FOREIGN KEY (idUsuario) REFERENCES Usuario(id)
+);
+
+SELECT 
+    Usuario.nome AS usuario, 
+    Livro.titulo AS livro, 
+    Emprestimo.dataEmprestimo, 
+    Emprestimo.dataDevolucao
+FROM 
+    Emprestimo
+INNER JOIN 
+    Usuario ON Emprestimo.idUsuario = Usuario.id
+INNER JOIN 
+    Livro ON Emprestimo.idLivro = Livro.id;

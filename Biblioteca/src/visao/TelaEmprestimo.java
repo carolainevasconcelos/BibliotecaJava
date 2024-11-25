@@ -8,16 +8,16 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import modelo.Conexao; // Certifique-se de que o pacote Conexao está correto
-import javax.swing.JComboBox;
+import modelo.Conexao;
+import javax.swing.JOptionPane;
 import java.sql.Date;
-import java.sql.PreparedStatement;
 import java.sql.Types;
 
 /**
  *
  * @author carol
  */
+
 public class TelaEmprestimo extends javax.swing.JFrame {
 
     /**
@@ -27,6 +27,7 @@ public class TelaEmprestimo extends javax.swing.JFrame {
         initComponents();
         carregarComboBoxes();
     }
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -48,7 +49,7 @@ public class TelaEmprestimo extends javax.swing.JFrame {
         jLabel6 = new javax.swing.JLabel();
         jBsalvar = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(102, 153, 255));
@@ -129,98 +130,103 @@ public class TelaEmprestimo extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
     private void carregarComboBoxes() {
-        try (Connection conexao = Conexao.getConexao()) {
-            // Preencher jComboBox1 com usuários
-            String sqlUsuarios = "SELECT id, nome FROM Usuario";
-            try (PreparedStatement stmt = conexao.prepareStatement(sqlUsuarios); ResultSet rs = stmt.executeQuery()) {
-                jComboBox1.removeAllItems();
-                while (rs.next()) {
-                    jComboBox1.addItem(rs.getInt("id") + " - " + rs.getString("nome"));
-                }
+        // Preencher o ComboBox com dados de livros e usuários (simulação)
+    try (Connection conexao = Conexao.getConnection()) {
+        // Preencher o ComboBox de usuários
+        String sqlUsuario = "SELECT id, nome FROM Usuario"; // Ajuste conforme sua tabela
+        try (PreparedStatement stmtUsuario = conexao.prepareStatement(sqlUsuario);
+             ResultSet rsUsuario = stmtUsuario.executeQuery()) {
+            while (rsUsuario.next()) {
+                String idNome = rsUsuario.getInt("id") + " - " + rsUsuario.getString("nome");
+                jComboBox1.addItem(idNome); // Preencher ComboBox de usuários
             }
-
-            // Preencher jComboBox2 com livros
-            String sqlLivros = "SELECT id, titulo FROM Livro";
-            try (PreparedStatement stmt = conexao.prepareStatement(sqlLivros); ResultSet rs = stmt.executeQuery()) {
-                jComboBox2.removeAllItems();
-                while (rs.next()) {
-                    jComboBox2.addItem(rs.getInt("id") + " - " + rs.getString("titulo"));
-                }
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
+
+        // Preencher o ComboBox de livros
+        String sqlLivro = "SELECT id, titulo FROM Livro"; // Ajuste conforme sua tabela
+        try (PreparedStatement stmtLivro = conexao.prepareStatement(sqlLivro);
+             ResultSet rsLivro = stmtLivro.executeQuery()) {
+            while (rsLivro.next()) {
+                String idTitulo = rsLivro.getInt("id") + " - " + rsLivro.getString("titulo");
+                jComboBox2.addItem(idTitulo); // Preencher ComboBox de livros
+            }
+        }
+    } catch (SQLException ex) {
+        ex.printStackTrace();
+        JOptionPane.showMessageDialog(this, "Erro ao carregar dados: " + ex.getMessage());
+    }
     }
 
+
     private void jBsalvarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBsalvarActionPerformed
-        // TODO add your handling code here:
-        String usuarioSelecionado = (String) jComboBox1.getSelectedItem();
-        String livroSelecionado = (String) jComboBox2.getSelectedItem();
+        // Obter os valores dos ComboBoxes
+    String usuarioSelecionado = (String) jComboBox1.getSelectedItem();
+    String livroSelecionado = (String) jComboBox2.getSelectedItem();
 
-        // Extrair IDs do texto dos ComboBoxes
-        int idUsuario = Integer.parseInt(usuarioSelecionado.split(" - ")[0]);
-        int idLivro = Integer.parseInt(livroSelecionado.split(" - ")[0]);
+    // Extrair os IDs dos ComboBoxes (parte antes do " - ")
+    int idUsuario = Integer.parseInt(usuarioSelecionado.split(" - ")[0]);
+    int idLivro = Integer.parseInt(livroSelecionado.split(" - ")[0]);
 
-        // Obter datas dos TextFields
-        String dataEmprestimo = jTdataEmprestimo.getText();
-        String dataDevolucao = jTdataDevolucao.getText(); // Pode estar vazio
+    // Obter as datas
+    String dataEmprestimo = jTdataEmprestimo.getText();
+    String dataDevolucao = jTdataDevolucao.getText();
 
-        // Inserir no banco de dados
-        String sql = "INSERT INTO Emprestimo (idLivro, idUsuario, dataEmprestimo, dataDevolucao) VALUES (?, ?, ?, ?)";
-        try (Connection conexao = Conexao.getConexao(); PreparedStatement stmt = conexao.prepareStatement(sql)) {
-            stmt.setInt(1, idLivro);
-            stmt.setInt(2, idUsuario);
-            stmt.setDate(3, Date.valueOf(dataEmprestimo));
-            if (dataDevolucao.isEmpty()) {
-                stmt.setNull(4, Types.DATE);
-            } else {
-                stmt.setDate(4, Date.valueOf(dataDevolucao));
-            }
+    String sql = "INSERT INTO Emprestimo (idLivro, idUsuario, dataEmprestimo, dataDevolucao) VALUES (?, ?, ?, ?)";
+    try (Connection conexao = Conexao.getConnection(); PreparedStatement stmt = conexao.prepareStatement(sql)) {
+        stmt.setInt(1, idLivro);
+        stmt.setInt(2, idUsuario);
+        stmt.setDate(3, Date.valueOf(dataEmprestimo));
 
-            int rowsAffected = stmt.executeUpdate();
-            if (rowsAffected > 0) {
-                javax.swing.JOptionPane.showMessageDialog(this, "Empréstimo salvo com sucesso!");
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-            javax.swing.JOptionPane.showMessageDialog(this, "Erro ao salvar o empréstimo: " + ex.getMessage());
+        if (dataDevolucao.isEmpty()) {
+            stmt.setNull(4, Types.DATE);
+        } else {
+            stmt.setDate(4, Date.valueOf(dataDevolucao));
         }
+
+        int rowsAffected = stmt.executeUpdate();
+        if (rowsAffected > 0) {
+            JOptionPane.showMessageDialog(this, "Empréstimo salvo com sucesso!");
+        }
+    } catch (SQLException ex) {
+        ex.printStackTrace();
+        JOptionPane.showMessageDialog(this, "Erro ao salvar o empréstimo: " + ex.getMessage());
+    }
     }//GEN-LAST:event_jBsalvarActionPerformed
 
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+    /* Set the Nimbus look and feel */
+    //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+    /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
          * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
+     */
+    try {
+        for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+            if ("Nimbus".equals(info.getName())) {
+                javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                break;
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(TelaEmprestimo.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(TelaEmprestimo.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(TelaEmprestimo.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(TelaEmprestimo.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-        //</editor-fold>
+    } catch (ClassNotFoundException ex) {
+        java.util.logging.Logger.getLogger(TelaEmprestimo.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+    } catch (InstantiationException ex) {
+        java.util.logging.Logger.getLogger(TelaEmprestimo.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+    } catch (IllegalAccessException ex) {
+        java.util.logging.Logger.getLogger(TelaEmprestimo.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+    } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        java.util.logging.Logger.getLogger(TelaEmprestimo.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+    }
+    //</editor-fold>
 
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
+    /* Create and display the form */
+    java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new TelaEmprestimo().setVisible(true);
+                new TelaEmprestimo().setVisible(true); // Certifique-se de que a classe foi instanciada corretamente
             }
         });
-    }
+}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBsalvar;

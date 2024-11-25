@@ -10,7 +10,7 @@ public class UsuarioControle {
     private Connection conexao;
 
     public UsuarioControle() throws SQLException {
-        this.conexao = Conexao.getConexao();
+        this.conexao = Conexao.getConnection();
     }
 
     // Método para adicionar um usuário

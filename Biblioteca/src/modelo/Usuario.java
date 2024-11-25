@@ -46,7 +46,7 @@ public class Usuario {
     // Método para salvar no banco de dados
     public void salvar() throws SQLException {
         String sql = "INSERT INTO usuario (nome, cpf, email) VALUES (?, ?, ?)";
-        try (Connection conn = Conexao.getConexao(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (Connection conn = Conexao.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, nome);
             stmt.setString(2, cpf);
             stmt.setString(3, email);

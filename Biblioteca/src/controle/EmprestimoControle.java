@@ -1,6 +1,7 @@
 package controle;
 
 import modelo.Conexao;
+import java.sql.Connection;
 import modelo.Emprestimo;
 import java.sql.*;
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ public class EmprestimoControle {
     private Connection conexao;
 
     public EmprestimoControle() throws SQLException {
-        this.conexao = Conexao.getConexao();
+        this.conexao = Conexao.getConnection();  // Usando o método renomeado
     }
 
     public ArrayList<String[]> listarEmprestimos() throws SQLException {
@@ -101,4 +102,18 @@ public class EmprestimoControle {
             stmt.executeUpdate();
         }
     }
+    
+    public boolean excluirEmprestimo(String idEmprestimo) throws SQLException {
+    String sql = "DELETE FROM emprestimo WHERE id = ?"; // Supondo que a tabela seja 'emprestimos'
+    try (Connection conn = Conexao.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+        
+        stmt.setString(1, idEmprestimo);
+        
+        int rowsAffected = stmt.executeUpdate();
+        return rowsAffected > 0; // Se alguma linha for afetada, a exclusão foi bem-sucedida
+    }
+
+}
+
 }
